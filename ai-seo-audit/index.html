@@ -165,29 +165,80 @@ form.addEventListener('submit', async function(e) {
         });
 
         const healthCard = cards[1];
+const healthCard = cards[1];
 
-        healthCard.innerHTML = `
-            <h3>Overall health</h3>
+function categoryScore(names) {
+    const selected = data.checks.filter(check =>
+        names.some(name =>
+            check.name.toLowerCase().includes(name)
+        )
+    );
 
-            <div class="meter">
-                <div class="fill" style="width:${data.score}%"></div>
-            </div>
+    if (!selected.length) return null;
 
-            <div class="metric">
-                <span>Passed checks</span>
-                <b>${data.summary.passed}</b>
-            </div>
+    const passed = selected.filter(
+        check => check.status === 'pass'
+    ).length;
 
-            <div class="metric">
-                <span>Issues found</span>
-                <b>${data.summary.issues}</b>
-            </div>
+    return Math.round((passed / selected.length) * 100);
+}
 
-            <div class="metric">
-                <span>Total checks</span>
-                <b>${data.summary.total}</b>
-            </div>
-        `;
+const technicalScore = categoryScore([
+    'https',
+    'canonical',
+    'robots',
+    'sitemap'
+]);
+
+const onPageScore = categoryScore([
+    'title',
+    'meta description',
+    'h1',
+    'h2',
+    'image alt'
+]);
+
+const linksScore = categoryScore([
+    'internal links'
+]);
+
+healthCard.innerHTML = `
+    <h3>Score breakdown</h3>
+
+    <div class="meter">
+        <div class="fill" style="width:${data.score}%"></div>
+    </div>
+
+    <div class="metric">
+        <span>Overall SEO</span>
+        <b>${data.score}/100</b>
+    </div>
+
+    <div class="metric">
+        <span>Technical SEO</span>
+        <b>${technicalScore === null ? 'N/A' : technicalScore + '%'}</b>
+    </div>
+
+    <div class="metric">
+        <span>On-Page SEO</span>
+        <b>${onPageScore === null ? 'N/A' : onPageScore + '%'}</b>
+    </div>
+
+    <div class="metric">
+        <span>Links</span>
+        <b>${linksScore === null ? 'N/A' : linksScore + '%'}</b>
+    </div>
+
+    <div class="metric">
+        <span>Performance</span>
+        <b>N/A</b>
+    </div>
+
+    <div class="metric">
+        <span>Content</span>
+        <b>N/A</b>
+    </div>
+`;
 
         recommendations.innerHTML = '';
 
