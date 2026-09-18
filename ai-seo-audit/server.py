@@ -56,7 +56,8 @@ def audit(url):
     return {'url':final,'status_code':status,'score':score,'checks':checks,'summary':{'passed':passed,'issues':len(checks)-passed,'total':len(checks)}}
 
 class Handler(BaseHTTPRequestHandler):
-        def do_GET(self):
+
+    def do_GET(self):
         if self.path == "/" or self.path == "/index.html":
             try:
                 with open("index.html", "rb") as f:
@@ -72,6 +73,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(500, str(e))
         else:
             self.send_error(404, "Not Found")
+
     def send_json(self,obj,code=200):
         b=json.dumps(obj).encode(); self.send_response(code); self.send_header('Content-Type','application/json'); self.send_header('Access-Control-Allow-Origin','*'); self.send_header('Content-Length',str(len(b))); self.end_headers(); self.wfile.write(b)
     def do_POST(self):
