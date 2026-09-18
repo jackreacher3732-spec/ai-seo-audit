@@ -294,7 +294,66 @@ healthCard.innerHTML = `
 
         loading.style.display = 'none';
         results.style.display = 'block';
+        pdfActions.style.display = 'block';
 
+downloadPdf.onclick = function () {
+    const report = document.querySelector('.results');
+
+    const printWindow = window.open('', '_blank');
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>RankPilot AI - SEO Report</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 40px;
+                    color: #111;
+                }
+
+                h1 {
+                    margin-bottom: 5px;
+                }
+
+                .report {
+                    margin-top: 30px;
+                }
+
+                .card {
+                    border: 1px solid #ddd;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+
+                .metric {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 8px 0;
+                }
+            </style>
+        </head>
+
+        <body>
+            <h1>RankPilot AI</h1>
+            <p>SEO Audit Report</p>
+
+            <div class="report">
+                ${report.innerHTML}
+            </div>
+
+            <script>
+                window.onload = function () {
+                    window.print();
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+};
         results.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
