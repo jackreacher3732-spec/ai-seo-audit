@@ -16,9 +16,134 @@
 <section class="results" id="results"><div class="resulthead"><div><h2>SEO Audit Report</h2><div class="domain" id="domain"></div></div><div class="score" id="score">74<small>/100</small></div></div><div class="grid"><div class="card"><h3>Issues to fix</h3><div class="issue"><div><strong>Missing meta description</strong><p>Add a unique description that explains the page and targets its primary intent.</p></div><span class="badge bad">CRITICAL</span></div><div class="issue"><div><strong>3 images missing alt text</strong><p>Add descriptive alt text where images convey useful information.</p></div><span class="badge warn">WARNING</span></div><div class="issue"><div><strong>Heading hierarchy looks healthy</strong><p>One clear H1 and logical subheadings detected.</p></div><span class="badge good">PASSED</span></div><div class="issue"><div><strong>HTTPS enabled</strong><p>Secure connection detected.</p></div><span class="badge good">PASSED</span></div></div><div class="card"><h3>Overall health</h3><div class="meter"><div class="fill"></div></div><div class="metric"><span>Technical SEO</span><b>82</b></div><div class="metric"><span>On-page</span><b>71</b></div><div class="metric"><span>Performance</span><b>68</b></div><div class="metric"><span>Content</span><b>79</b></div><div class="metric"><span>Links</span><b>75</b></div></div></div></section>
 </main><footer class="footer">© 2026 RankPilot AI · SEO insights for humans, not robots.</footer>
 </div>
-<script>const f=document.getElementById('auditForm');const l=document.getElementById('loading');const r=document.getElementById('results');const d=document.getElementById('domain');f.addEventListener('submit',e=>{e.preventDefault();const u=document.getElementById('url').value.trim();if(!u)return;l.style.display='block';r.style.display='none';setTimeout(()=>{l.style.display='none';r.style.display='block';d.textContent=new URL(u).hostname+' · Demo audit results';r.scrollIntoView({behavior:'smooth',block:'start'})},1200)});</script>
 <script>
-async function runRealAudit(){const input=document.querySelector('input');const btn=[...document.querySelectorAll('button')].find(b=>/audit/i.test(b.innerText));if(!input||!btn)return;const url=input.value.trim();if(!url)return alert('Enter a website URL first.');btn.disabled=true;const old=btn.innerText;btn.innerText='Crawling website...';try{const r=await fetch('/api/audit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});const d=await r.json();if(d.error)throw new Error(d.error);document.querySelectorAll('[data-score]').forEach(e=>e.textContent=d.score+'/100');alert('Real audit complete: '+d.summary.passed+' passed, '+d.summary.issues+' issues.');console.log('SEO AUDIT',d);}catch(e){alert('Audit failed: '+e.message)}finally{btn.disabled=false;btn.innerText=old}}
-document.addEventListener('DOMContentLoaded',()=>{const btn=[...document.querySelectorAll('button')].find(b=>/audit/i.test(b.innerText));if(btn){btn.addEventListener('click',e=>{e.preventDefault();runRealAudit()})}});
+const form = document.getElementById('auditForm');
+const input = document.getElementById('url');
+const loading = document.getElementById('loading');
+const results = document.getElementById('results');
+const domain = document.getElementById('domain');
+const score = document.getElementById('score');
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const url = input.value.trim();
+
+    if (!url) {
+        alert('Enter a website URL first.');
+        return;
+    }
+
+    loading.style.display = 'block';
+    results.style.display = 'none';
+
+    const button = form.querySelector('button');
+    const oldText = button.innerText;
+
+    button.disabled = true;
+    button.innerText = 'Crawling website...';
+
+    try {
+        const response = await fetch('/api/audit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        // Website information
+        domain.textContent = new URL(url).hostname + ' · Real audit results';
+
+        // Score
+        score.innerHTML = data.score + '<small>/100</small>';
+
+        // Find the issues card
+        const cards = results.querySelectorAll('.card');
+        const issuesCard = cards[0];
+
+        // Clear old demo results
+        issuesCard.innerHTML = '<h3>Audit checks</h3>';
+
+        // Add real audit checks
+        data.checks.forEach(check => {
+            const issue = document.createElement('div');
+            issue.className = 'issue';
+
+            const content = document.createElement('div');
+
+            const title = document.createElement('strong');
+            title.textContent = check.name;
+
+            const detail = document.createElement('p');
+            detail.textContent = check.detail;
+
+            content.appendChild(title);
+            content.appendChild(detail);
+
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+
+            if (check.status === 'pass') {
+                badge.classList.add('good');
+                badge.textContent = 'PASSED';
+            } else {
+                badge.classList.add(check.priority === 'high' ? 'bad' : 'warn');
+                badge.textContent = check.priority === 'high'
+                    ? 'CRITICAL'
+                    : 'WARNING';
+            }
+
+            issue.appendChild(content);
+            issue.appendChild(badge);
+
+            issuesCard.appendChild(issue);
+        });
+
+        // Update overall health card
+        const healthCard = cards[1];
+
+        healthCard.innerHTML = `
+            <h3>Overall health</h3>
+            <div class="meter">
+                <div class="fill" style="width:${data.score}%"></div>
+            </div>
+            <div class="metric">
+                <span>Passed checks</span>
+                <b>${data.summary.passed}</b>
+            </div>
+            <div class="metric">
+                <span>Issues found</span>
+                <b>${data.summary.issues}</b>
+            </div>
+            <div class="metric">
+                <span>Total checks</span>
+                <b>${data.summary.total}</b>
+            </div>
+        `;
+
+        loading.style.display = 'none';
+        results.style.display = 'block';
+
+        results.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+
+    } catch (error) {
+        loading.style.display = 'none';
+        alert('Audit failed: ' + error.message);
+    }
+
+    button.disabled = false;
+    button.innerText = oldText;
+});
 </script>
+
 </body></html>
