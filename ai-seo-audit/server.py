@@ -2,7 +2,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.request import Request, urlopen
 from urllib.parse import urlparse, urljoin
 from html.parser import HTMLParser
-import json, re, ssl
+import json, re, ssl, os
 
 class SEOParser(HTMLParser):
     def __init__(self):
@@ -66,5 +66,6 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e: self.send_json({'error':str(e)},400)
     def log_message(self,*args): pass
 
-print('AI SEO Audit API running on http://localhost:8000')
-HTTPServer(('0.0.0.0',8000),Handler).serve_forever()
+port = int(os.environ.get("PORT", 8000))
+print(f"AI SEO Audit API running on port {port}")
+HTTPServer(("0.0.0.0", port), Handler).serve_forever()
