@@ -14,6 +14,13 @@
 <section class="hero" id="audit"><div class="pill">✦ AI-POWERED SEO AUDITS</div><h1>Find what’s holding your <em>website</em> back.</h1><p>Scan your site for technical, on-page, performance and content issues — then get clear, AI-powered fixes you can actually use.</p><form class="auditbox" id="auditForm"><input id="url" type="url" placeholder="https://yourwebsite.com" required><button class="btn">Run Free Audit →</button></form><div class="loading" id="loading">Analyzing pages, metadata, links and technical signals…</div><div class="trust">No credit card · Instant demo audit · Built for agencies & businesses</div></section>
 <section class="features" id="features"><div class="card"><div class="icon">⌁</div><h3>Technical SEO</h3><p>Indexability, canonical tags, robots.txt, sitemap, HTTPS and crawl signals.</p></div><div class="card"><div class="icon">◎</div><h3>On-Page SEO</h3><p>Titles, meta descriptions, headings, images, internal links and structured content.</p></div><div class="card"><div class="icon">◈</div><h3>AI Recommendations</h3><p>Turn raw audit findings into prioritised, plain-English actions with suggested fixes.</p></div></section>
 <section class="results" id="results"><div class="resulthead"><div><h2>SEO Audit Report</h2><div class="domain" id="domain"></div></div><div class="score" id="score">74<small>/100</small></div></div><div class="grid"><div class="card"><h3>Issues to fix</h3><div class="issue"><div><strong>Missing meta description</strong><p>Add a unique description that explains the page and targets its primary intent.</p></div><span class="badge bad">CRITICAL</span></div><div class="issue"><div><strong>3 images missing alt text</strong><p>Add descriptive alt text where images convey useful information.</p></div><span class="badge warn">WARNING</span></div><div class="issue"><div><strong>Heading hierarchy looks healthy</strong><p>One clear H1 and logical subheadings detected.</p></div><span class="badge good">PASSED</span></div><div class="issue"><div><strong>HTTPS enabled</strong><p>Secure connection detected.</p></div><span class="badge good">PASSED</span></div></div><div class="card"><h3>Overall health</h3><div class="meter"><div class="fill"></div></div><div class="metric"><span>Technical SEO</span><b>82</b></div><div class="metric"><span>On-page</span><b>71</b></div><div class="metric"><span>Performance</span><b>68</b></div><div class="metric"><span>Content</span><b>79</b></div><div class="metric"><span>Links</span><b>75</b></div></div></div></section>
+<section class="ai-recommendations" style="display:none;margin:20px 0 80px">
+<div class="card">
+<h2>🤖 AI Recommendations</h2>
+<p style="color:var(--muted);font-size:13px">Actionable fixes based on your real SEO audit.</p>
+<div id="recommendations"></div>
+</div>
+</section>
 </main><footer class="footer">© 2026 RankPilot AI · SEO insights for humans, not robots.</footer>
 </div>
 <script>
@@ -23,6 +30,55 @@ const loading = document.getElementById('loading');
 const results = document.getElementById('results');
 const domain = document.getElementById('domain');
 const score = document.getElementById('score');
+
+const recommendationSection = document.querySelector('.ai-recommendations');
+const recommendations = document.getElementById('recommendations');
+
+function getRecommendation(check) {
+    const name = check.name.toLowerCase();
+
+    if (name.includes('meta description')) {
+        return 'Write a unique, relevant meta description that clearly explains the page. Aim for roughly 150–160 characters and include the page’s main search intent naturally.';
+    }
+
+    if (name.includes('image alt')) {
+        return 'Add descriptive alt text to images that communicate useful information. Keep it natural and specific instead of stuffing keywords.';
+    }
+
+    if (name.includes('title')) {
+        return 'Create a unique, descriptive title tag that clearly explains the page and targets its primary search intent.';
+    }
+
+    if (name.includes('h1')) {
+        return 'Use one clear, descriptive H1 that matches the main topic of the page. Keep the heading hierarchy logical.';
+    }
+
+    if (name.includes('h2')) {
+        return 'Use relevant H2 headings to organise the page into clear sections and make the content easier for users and search engines to understand.';
+    }
+
+    if (name.includes('https')) {
+        return 'Make sure the entire website uses HTTPS and redirects HTTP traffic to the secure HTTPS version.';
+    }
+
+    if (name.includes('canonical')) {
+        return 'Add a correct canonical URL to pages where appropriate to help search engines understand the preferred version of the page.';
+    }
+
+    if (name.includes('robots')) {
+        return 'Create and maintain a valid robots.txt file so search engines can understand which areas of the website they may crawl.';
+    }
+
+    if (name.includes('sitemap')) {
+        return 'Create an XML sitemap containing your important indexable URLs and submit it through Google Search Console.';
+    }
+
+    if (name.includes('internal links')) {
+        return 'Add useful internal links between related pages using descriptive anchor text. This helps users and search engines discover important content.';
+    }
+
+    return 'Review this SEO signal and make the recommended improvement described in the audit details.';
+}
 
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -36,6 +92,7 @@ form.addEventListener('submit', async function(e) {
 
     loading.style.display = 'block';
     results.style.display = 'none';
+    recommendationSection.style.display = 'none';
 
     const button = form.querySelector('button');
     const oldText = button.innerText;
@@ -58,20 +115,17 @@ form.addEventListener('submit', async function(e) {
             throw new Error(data.error);
         }
 
-        // Website information
-        domain.textContent = new URL(url).hostname + ' · Real audit results';
+        domain.textContent =
+            new URL(url).hostname + ' · Real audit results';
 
-        // Score
-        score.innerHTML = data.score + '<small>/100</small>';
+        score.innerHTML =
+            data.score + '<small>/100</small>';
 
-        // Find the issues card
         const cards = results.querySelectorAll('.card');
         const issuesCard = cards[0];
 
-        // Clear old demo results
         issuesCard.innerHTML = '<h3>Audit checks</h3>';
 
-        // Add real audit checks
         data.checks.forEach(check => {
             const issue = document.createElement('div');
             issue.className = 'issue';
@@ -94,8 +148,12 @@ form.addEventListener('submit', async function(e) {
                 badge.classList.add('good');
                 badge.textContent = 'PASSED';
             } else {
-                badge.classList.add(check.priority === 'high' ? 'bad' : 'warn');
-                badge.textContent = check.priority === 'high'
+                badge.classList.add(
+                    check.priority === 'high' ? 'bad' : 'warn'
+                );
+
+                badge.textContent =
+                    check.priority === 'high'
                     ? 'CRITICAL'
                     : 'WARNING';
             }
@@ -106,27 +164,73 @@ form.addEventListener('submit', async function(e) {
             issuesCard.appendChild(issue);
         });
 
-        // Update overall health card
         const healthCard = cards[1];
 
         healthCard.innerHTML = `
             <h3>Overall health</h3>
+
             <div class="meter">
                 <div class="fill" style="width:${data.score}%"></div>
             </div>
+
             <div class="metric">
                 <span>Passed checks</span>
                 <b>${data.summary.passed}</b>
             </div>
+
             <div class="metric">
                 <span>Issues found</span>
                 <b>${data.summary.issues}</b>
             </div>
+
             <div class="metric">
                 <span>Total checks</span>
                 <b>${data.summary.total}</b>
             </div>
         `;
+
+        recommendations.innerHTML = '';
+
+        const failedChecks =
+            data.checks.filter(check => check.status !== 'pass');
+
+        if (failedChecks.length > 0) {
+
+            failedChecks.forEach(check => {
+                const box = document.createElement('div');
+
+                box.style.padding = '16px 0';
+                box.style.borderBottom =
+                    '1px solid var(--line)';
+
+                box.innerHTML = `
+                    <strong>${check.name}</strong>
+
+                    <p style="margin:6px 0;color:var(--muted);font-size:13px">
+                        ${check.detail}
+                    </p>
+
+                    <p style="margin:8px 0 0;color:#c4b5fd;font-size:13px">
+                        <b>How to fix:</b>
+                        ${getRecommendation(check)}
+                    </p>
+                `;
+
+                recommendations.appendChild(box);
+            });
+
+            recommendationSection.style.display = 'block';
+
+        } else {
+
+            recommendations.innerHTML = `
+                <p style="color:var(--good)">
+                    🎉 No major issues were detected. Your website passed all available checks.
+                </p>
+            `;
+
+            recommendationSection.style.display = 'block';
+        }
 
         loading.style.display = 'none';
         results.style.display = 'block';
@@ -137,12 +241,16 @@ form.addEventListener('submit', async function(e) {
         });
 
     } catch (error) {
-        loading.style.display = 'none';
-        alert('Audit failed: ' + error.message);
-    }
 
-    button.disabled = false;
-    button.innerText = oldText;
+        loading.style.display = 'none';
+
+        alert('Audit failed: ' + error.message);
+
+    } finally {
+
+        button.disabled = false;
+        button.innerText = oldText;
+    }
 });
 </script>
 
